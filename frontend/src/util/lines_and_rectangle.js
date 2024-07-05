@@ -13,7 +13,7 @@ export function createElement (id,x1,y1,x2,y2,tools){
         case "pencil":
             return {id,points:[{x:x1,y:y1}],tools};
         case "text":
-          return {id,x1,y1,tools,text:""}
+          return {id,x1,y1,x2,y2,tools,text:""}
         default:
             throw new Error(`Type not reconizes:${tools}`)
             break;
@@ -38,11 +38,15 @@ export const drawElements=(element,context,roughCanvas)=>{
       })
       const pathData = getSvgPathFromStroke(outlinePoints)
       const myPath = new Path2D(pathData)
-      context.font = "48px serif";
+
       context.fill(myPath)
       break;
      case 'text':
-      context.strokeText(element.text, element.x1, element.y1);
+      context.textBaseline = "top"
+      context.font = "24px sans-serif"
+      context.stroke();
+      context.fillText(element.text, element.x1, element.y1)
+     
       default:
           break;
      }
@@ -52,13 +56,14 @@ export const nearPoint=(X,Y,x1,y1,name)=>{
 }
 export function positionOfElementAtPosition(x,y,element){
    const {tools}=element;
-  if(tools==="rectangle"){
+  if(tools==="rectangle"||tools==="text"){
     const {x1,y1,x2,y2}=element;
      const topLeft= nearPoint(x,y,x1,y1,"tl")
      const topRight= nearPoint(x,y,x2,y1,"tr")
      const bottomLeft= nearPoint(x,y,x1,y2,"bl")
      const bottomRight= nearPoint(x,y,x2,y2,"br");
      let inside = x>=x1&&y>=y1&&x<=x2&&y<=y2 ? "inside":null;
+     if(tools==='text') return inside;
      return topLeft||topRight||bottomLeft||bottomRight||inside;
 
   }else if(tools==="line"){

@@ -8,7 +8,7 @@ import {createElement,getElementAtPosition,
     getSvgPathFromStroke,
     drawElements
 } from "../util/lines_and_rectangle.js"
-import getStroke from 'perfect-freehand'
+
 
 
 const Canvas = () => {
@@ -24,17 +24,20 @@ const Canvas = () => {
       const context= canvs.current.getContext('2d');
       context.clearRect(0,0,canvs.current.width,canvs.current.height);
        const rc= rough.canvas(canvs.current);
-        //  elements.forEach((ele)=>{
-        //   const {element}=ele;
-        //   rc.draw(element);
-        //  })
-         elements.forEach((element)=>drawElements(element,context,rc));
+       
+        console.log(selectedelement,elements)
+         elements.forEach((element)=>{
+          if(action==='writing' &&selectedelement.id===element.id) {
+            console.log("wkjenwk")
+            return;
+          }
+          drawElements(element,context,rc)});
          if(selecctedelementbox){
             drawSelectBox(selecctedelementbox,context);
 
          }
    
-    },[elements,selecctedelementbox]);
+    },[elements,selecctedelementbox,selectedelement,action]);
      useEffect(()=>{
      
       if(tools!="selection"){
@@ -51,6 +54,7 @@ const Canvas = () => {
       }
      },[action,selectedelement])
     const handleMouseDown =(e)=>{
+      if(action==='writing') return ;
         const {clientX:X,clientY:Y} =e;
       if(tools==="") return;
       if(tools==="selection"){
@@ -83,11 +87,10 @@ const Canvas = () => {
       const element = createElement(elements.length,X,Y,X,Y,tools);
       setelements(prev=>[...prev,element]);
       setSelectedelement(element)
-      console.log(X,Y);
       setAction( tools==='text'? "writing":"Drawing"); 
     }
     }
-    function updateElements(id,x1,y1,x2,y2,tools){
+    function updateElements(id,x1,y1,x2,y2,tools,options){
         // For updation of elements when we arre moving see on mouse  move we are calling
         const copy= [...elements];
        switch (tools) {
@@ -102,9 +105,24 @@ const Canvas = () => {
         copy[id].points=[...copy[id].points,{x:x2,y:y2}]
         // console.log(copy[id].points);
         break;
+        case 'text':
+          const context= canvs.current.getContext('2d');
+          const textWidth = context
+                            .measureText(options.text)
+                            .width;
+                            
+          const textHeight =24;               
+          copy[id]={
+            ...createElement(id,x1,y1,x1+textWidth,y1+textHeight,tools),
+            text:options.text
+          }
+    
+     
+          break;
         default:
             break;
        }
+
        setelements(copy,true);
        
     }
@@ -144,8 +162,8 @@ const Canvas = () => {
              let height=y2-y1;
              const newX1=X-offSetX;
              const newY1=Y-offSetY;
-            
-             updateElements(id,newX1,newY1,newX1+width,newY1+height,tools);}
+            const options= tools==='text'?{text:selectedelement.text}:{};
+             updateElements(id,newX1,newY1,newX1+width,newY1+height,tools,options);}
            
         }else if(action==="resize"){
             const {x1,y1,x2,y2}=getOppositeCoordinate(selectedelement,X,Y);
@@ -157,10 +175,15 @@ const Canvas = () => {
       return ['line','rectangle'].includes(type);
     }
 
-    const handleMouseUp =()=>{
-  
+    const handleMouseUp =(e)=>{
+      const {clientX:X,clientY:Y} =e;
           // console.log(elements)
-   
+          if(selectedelement&&selectedelement.tools==="text"&& X-selectedelement.offSetX===selectedelement.x1
+          &&Y-selectedelement.offSetY===selectedelement.y1){
+         
+            setAction("writing")
+            return ;
+          }
         if((action==="Drawing"||action==="resize")&&adjustmentRequired(selectedelement.tools)){
             //For resizing to make even coordinates
       
@@ -176,6 +199,12 @@ const Canvas = () => {
       setAction("none");
       setSelectedelement(null);
     };
+    const handleBlur =(event)=>{
+      const {id,x1,y1,tools}=selectedelement;
+      setAction("none");
+      setSelectedelement(null);
+      updateElements(id,x1,y1,x1,y1,tools,{text:event.target.value})
+    }
  
 
   return (
@@ -235,12 +264,22 @@ const Canvas = () => {
    {action === "writing" ? (
         <textarea
           ref={testArearef}
-  
+          onBlur={handleBlur}
+          
           style={{
             position: "fixed",
-            top:selectedelement.y1 - 2 ,
+            top: selectedelement.y1 - 2 ,
             left: selectedelement.x1 ,
-            
+            font: "24px sans-serif",
+            margin: 0,
+            padding: 0,
+            border: 0,
+            outline: 0,
+            resize: "auto",
+            overflow: "hidden",
+            whiteSpace: "pre",
+            background: "transparent",
+            zIndex: 2,
           }}
         />
       ) : null}
@@ -252,6 +291,7 @@ const Canvas = () => {
     onMouseDown={handleMouseDown}
     onMouseMove={handleMouseMove}
     onMouseUp={handleMouseUp}
+    style={{ position: "absolute", zIndex: -1 ,fontSmooth:"auto"}}
    >
    </canvas>
 
