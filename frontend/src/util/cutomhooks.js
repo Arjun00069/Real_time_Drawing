@@ -6,7 +6,7 @@ import { contextApi } from "../App";
 export const useHistory = initialState => {
     const [index, setIndex] = useState(0);
     const [history, setHistory] = useState([initialState]);
-    const {isLoggedin}=useContext(contextApi);
+    const {isLoggedin,setIsLoggedIn}=useContext(contextApi);
   
     const setState = (action, overwrite = false) => {
       
@@ -54,5 +54,29 @@ export const useHistory = initialState => {
             console.log(error?.response?.message);
           }
      }
-    return [history[index], setState, undo, redo,save];
+     const logout = async()=>{
+      try { 
+        const config = {
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          withCredentials: true, // Send cookies with the request
+      };
+        const {data} = await axios.get(`${server}/draw/user/logout`,config);
+        if(data.success){
+          setIsLoggedIn(false);
+          localStorage.removeItem('isLoggedIn');
+           let newHistory=[];
+           newHistory.push([]);
+          //  console.log(newHistory);
+          setIndex(0);
+            setHistory(newHistory);
+        
+        }
+        
+      } catch (error) {
+        alert(error?.response?.data?.message)
+      }
+     }
+    return [history[index], setState, undo, redo,save,logout];
   };

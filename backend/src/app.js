@@ -16,7 +16,10 @@ app.get('/',(req,res)=>{
     res.send('servrer is working')
 })
 import userRoutes from "./routes/user.routes.js";
+import roomRoutes from "./routes/room.routes.js"
 app.use('/draw/user',userRoutes);
+app.use('/draw/room',roomRoutes);
+
 
 app.use((err, req, res, next) => {
     // console.log(err.message)

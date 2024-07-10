@@ -16,9 +16,8 @@ import './Canvas.css'
 
 
 const Canvas = () => {
-
-    const [action,setAction]=useState("none");
-    const [elements, setelements,undo,redo,save] = useHistory([]);
+  const [action,setAction]=useState("none");
+    const [elements, setelements,undo,redo,save,logout] = useHistory([]);
     const[loading,setLoding]=useState(false);
     const[tools,setTools]=useState("pencil");
     const [selectedelement,setSelectedelement]=useState(null);
@@ -233,7 +232,7 @@ const Canvas = () => {
       setSelectedelement(null);
       updateElements(id,x1,y1,x1,y1,tools,{text:event.target.value})
     }
- 
+   
 
   return (
     <>
@@ -286,7 +285,9 @@ const Canvas = () => {
         save();
      }} >Save</button>
     {!isLoggedin&& <button>  <Link to="/login">Login</Link></button>}
-   
+    {isLoggedin&& <button onClick={()=>{logout()}}> Logout</button>}
+
+     
    </div>
 
    {action === "writing" ? (
