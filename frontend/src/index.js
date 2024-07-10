@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+export const server= "http://localhost:8000"
 root.render(
   <React.StrictMode>
     <App />

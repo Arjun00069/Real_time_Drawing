@@ -1,1 +1,1 @@
-export const DB_NAME ="Drawing App"
+export const DB_NAME ="DrawingApp"

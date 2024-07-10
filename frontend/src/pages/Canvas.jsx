@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 import {useLayoutEffect,useRef,useState} from "react"
 import rough from "roughjs/bundled/rough.esm.js"
 import { useHistory } from '../util/cutomhooks.js'
@@ -8,24 +8,52 @@ import {createElement,getElementAtPosition,
     getSvgPathFromStroke,
     drawElements
 } from "../util/lines_and_rectangle.js"
-
+import { contextApi } from '../App.js'
+import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { server } from '../index.js'
+import './Canvas.css'
 
 
 const Canvas = () => {
 
     const [action,setAction]=useState("none");
     const [elements, setelements,undo,redo,save] = useHistory([]);
+    const[loading,setLoding]=useState(false);
     const[tools,setTools]=useState("pencil");
     const [selectedelement,setSelectedelement]=useState(null);
     const [selecctedelementbox,setselectedelementbox]=useState(null);
     const canvs=useRef(null);
     const testArearef=useRef();
+    const {isLoggedin}=useContext(contextApi);
+    const getData = async()=>{
+      setLoding(true)
+      const config = {
+       headers: {
+           'Content-Type': 'application/json',
+       },
+       withCredentials: true, // Send cookies with the request
+    };
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const {data} = await axios.get(`${server}/draw/user/getelements`,config)
+      const elements= data?.elements;
+
+      if(elements) setelements(elements,true);
+      setLoding(false);
+    }
+    useEffect(()=>{
+       if(isLoggedin){
+         getData();
+       }
+    },[isLoggedin])
       useLayoutEffect(() => {
+        if(elements){
       const context= canvs.current.getContext('2d');
       context.clearRect(0,0,canvs.current.width,canvs.current.height);
        const rc= rough.canvas(canvs.current);
        
-        console.log(selectedelement,elements)
+        
          elements.forEach((element)=>{
           if(action==='writing' &&selectedelement.id===element.id) {
             console.log("wkjenwk")
@@ -36,7 +64,7 @@ const Canvas = () => {
             drawSelectBox(selecctedelementbox,context);
 
          }
-   
+        }
     },[elements,selecctedelementbox,selectedelement,action]);
      useEffect(()=>{
      
@@ -257,7 +285,7 @@ const Canvas = () => {
      <button onClick={()=>{
         save();
      }} >Save</button>
- 
+    {!isLoggedin&& <button>  <Link to="/login">Login</Link></button>}
    
    </div>
 
@@ -285,15 +313,16 @@ const Canvas = () => {
       ) : null}
      
        
-
-   <canvas id="canva" width ={window.innerWidth} height={window.innerHeight} 
+(<canvas id="canva" className={`${((isLoggedin&&loading))?"pointerNone":""}`} width ={window.innerWidth} height={window.innerHeight} 
    ref={canvs} 
     onMouseDown={handleMouseDown}
     onMouseMove={handleMouseMove}
     onMouseUp={handleMouseUp}
     style={{ position: "absolute", zIndex: -1 ,fontSmooth:"auto"}}
    >
-   </canvas>
+   </canvas>)
+
+  { (isLoggedin && loading)&& (<div className='loading' style={{position:"fixed"}} >loading .....</div>)}
 
     </>
   )

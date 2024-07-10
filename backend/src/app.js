@@ -12,8 +12,17 @@ app.use(express.static("public"))
 app.use(cookieParser())//This middle ware is responsible for crud operation on cookie from server side
 
 app.get('/',(req,res)=>{
+    console.log(req.ip)
     res.send('servrer is working')
 })
+import userRoutes from "./routes/user.routes.js";
+app.use('/draw/user',userRoutes);
 
+app.use((err, req, res, next) => {
+    // console.log(err.message)
+    if (!err.message) err.message = "Something went wrong"
+    if (!err.statusCode) err.statusCode = 400
+    return res.status(err.statusCode).json({ success: false, message: err.message });
+})
 
 export {app};

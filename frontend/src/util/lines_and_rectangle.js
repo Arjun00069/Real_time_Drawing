@@ -93,6 +93,7 @@ export function distance(x1,y1,x2,y2){
   return Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2));
 }
 export function getElementAtPosition(X,Y,elements){
+  console.log(elements);
    return elements
    .map(element=>({...element,position:positionOfElementAtPosition(X,Y,element)}))
    .find(element=>element.position!=null)
