@@ -9,10 +9,11 @@ import {createElement,getElementAtPosition,
     drawElements
 } from "../util/lines_and_rectangle.js"
 import { contextApi } from '../App.js'
-import { Link } from 'react-router-dom'
+import { Link, json } from 'react-router-dom'
 import axios from 'axios'
 import { server } from '../index.js'
 import './Canvas.css'
+import { socket } from '../socket.js'
 
 
 const Canvas = () => {
@@ -24,7 +25,7 @@ const Canvas = () => {
     const [selecctedelementbox,setselectedelementbox]=useState(null);
     const canvs=useRef(null);
     const testArearef=useRef();
-    const {isLoggedin}=useContext(contextApi);
+    const {isLoggedin,isinRoom}=useContext(contextApi);
     const getData = async()=>{
       setLoding(true)
       const config = {
@@ -41,10 +42,14 @@ const Canvas = () => {
       if(elements) setelements(elements,true);
       setLoding(false);
     }
+    
+    
+   
     useEffect(()=>{
        if(isLoggedin){
          getData();
        }
+      
     },[isLoggedin])
       useLayoutEffect(() => {
         if(elements){
@@ -112,6 +117,7 @@ const Canvas = () => {
   
       const {clientX:X,clientY:Y} =e;
       const element = createElement(elements.length,X,Y,X,Y,tools);
+      
       setelements(prev=>[...prev,element]);
       setSelectedelement(element)
       setAction( tools==='text'? "writing":"Drawing"); 
@@ -149,7 +155,9 @@ const Canvas = () => {
         default:
             break;
        }
-
+       
+   
+    
        setelements(copy,true);
        
     }
@@ -182,6 +190,7 @@ const Canvas = () => {
                   ...copy[id],
                   points:newPoints
                 };
+             
                 setelements(copy,true)
               }else{
              const {id,x1,x2,y1,y2,tools,offSetX,offSetY}=selectedelement;
@@ -286,6 +295,10 @@ const Canvas = () => {
      }} >Save</button>
     {!isLoggedin&& <button>  <Link to="/login">Login</Link></button>}
     {isLoggedin&& <button onClick={()=>{logout()}}> Logout</button>}
+    {isinRoom&& <button onClick={()=>{
+      socket.disconnect();
+  
+    }}>Leave Room</button>}
 
      
    </div>

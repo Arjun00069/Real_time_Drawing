@@ -1,15 +1,42 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { server } from "..";
 import { contextApi } from "../App";
-
+import { socket } from "../socket";
 export const useHistory = initialState => {
     const [index, setIndex] = useState(0);
     const [history, setHistory] = useState([initialState]);
-    const {isLoggedin,setIsLoggedIn}=useContext(contextApi);
+    const {isLoggedin,setIsLoggedIn,isinRoom}=useContext(contextApi);
+    useEffect(() => {
+      if (isinRoom) {
+       
+        
+        // Emitting "elements" event to the socket
+      
+    
+        // Define your event handler functions
+      
+    
+        const handleComingElements = (data) => {
+          console.log(data);
+          if (data?.elements?.length > 0) {
+          setHistory(data.elements);
+          setIndex(data.index);
+          console.log("dfe");
+          }
+        };
+        socket.on("comming_elements", handleComingElements);
+    
+
+        return () => {
+ 
+          socket.off("comming_elements", handleComingElements);
+        };
+      }
+    }, [isinRoom]);
   
     const setState = (action, overwrite = false) => {
-      
+        //  console.log(history);
       const newState = typeof action === "function" ? action(history[index]) : action;
       if (overwrite) {
     
@@ -17,19 +44,39 @@ export const useHistory = initialState => {
         historyCopy[index] = newState;
   
         setHistory(historyCopy);
+        if(isinRoom){
+          let room = JSON.parse(localStorage.getItem('currentRoom'));
+          socket.emit("elements",{elements:historyCopy,index:index,room_id:room?.room_id});
+         }
+        
       } else {
         const updatedState = [...history].slice(0, index + 1);
-        console.log([...updatedState, newState]);
+        // console.log([...updatedState, newState]);
         setHistory([...updatedState, newState]);
         setIndex(prevState => prevState + 1);
+        if(isinRoom){
+          let room = JSON.parse(localStorage.getItem('currentRoom'));
+          socket.emit("elements",{elements:[...updatedState, newState],index:index+1,room_id:room?.room_id});
+         }
       }
-    
+      
     };
   
     const undo = () =>{
-        if(index>0) setIndex(prevIndex=>prevIndex-1);
+        if(index>0){ setIndex(prevIndex=>prevIndex-1);
+          if(isinRoom){
+            let room = JSON.parse(localStorage.getItem('currentRoom'));
+            socket.emit("elements",{elements:history,index:index-1,room_id:room?.room_id});
+           }
+        }
     };
-    const redo = () => index < history.length - 1 && setIndex(prevState => prevState + 1);
+    const redo = () =>{ if(index < history.length - 1) {setIndex(prevState => prevState + 1);
+      if(isinRoom){
+        let room = JSON.parse(localStorage.getItem('currentRoom'));
+        socket.emit("elements",{elements:history,index:index+1,room_id:room?.room_id});
+       }
+    }
+    }
      const save =async ()=>{
       if(!isLoggedin){
         alert("Please login to save");
@@ -78,5 +125,6 @@ export const useHistory = initialState => {
         alert(error?.response?.data?.message)
       }
      }
+     
     return [history[index], setState, undo, redo,save,logout];
   };
