@@ -211,3 +211,19 @@ export function getSvgPathFromStroke(points, closed = true) {
   
     return result
   }
+
+
+
+
+  export function customMousePointer (points,context){
+    const outlinePoints = getStroke(points,{
+      size: 8,
+      thinning:0.5 ,
+      smoothing: 0.5,
+      streamline: 0.5,
+    })
+    const pathData = getSvgPathFromStroke(outlinePoints)
+    const myPath = new Path2D(pathData)
+
+    context.fill(myPath)
+  }

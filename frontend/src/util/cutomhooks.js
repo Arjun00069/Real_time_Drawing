@@ -3,26 +3,43 @@ import axios from "axios";
 import { server } from "..";
 import { contextApi } from "../App";
 import { socket } from "../socket";
+const fetchRoomData =async()=>{
+try {
+  const room_id = JSON.parse(localStorage.getItem('currentRoom')).room_id;
+  const {data} = await axios.get(`${server}/draw/room/getroom?room_id=${room_id}`);
+    const {index,elements} =data.room;
+               return {index,elements};
+} catch (error) {
+  alert(error?.response?.data?.message);
+}
+}
 export const useHistory = initialState => {
     const [index, setIndex] = useState(0);
     const [history, setHistory] = useState([initialState]);
-    const {isLoggedin,setIsLoggedIn,isinRoom}=useContext(contextApi);
+    const {isLoggedin,setIsLoggedIn,isinRoom, setRoomElements,setRoomIndex, setIsinRoom}=useContext(contextApi);
+     useEffect(()=>{
+       if(isinRoom){
+           fetchRoomData().then((data)=>{
+            const {index,elements}= data      
+               setRoomElements(elements);
+          setRoomIndex(index);
+          setHistory(elements);
+          setIndex(index);
+           }).catch((err)=>{
+            console.log(err);
+           })
+         
+       }
+     },[isinRoom])
     useEffect(() => {
       if (isinRoom) {
-       
-        
-        // Emitting "elements" event to the socket
-      
-    
-        // Define your event handler functions
-      
-    
+        console.log('p')
         const handleComingElements = (data) => {
-          console.log(data);
+      
           if (data?.elements?.length > 0) {
           setHistory(data.elements);
           setIndex(data.index);
-          console.log("dfe");
+      
           }
         };
         socket.on("comming_elements", handleComingElements);
@@ -35,7 +52,7 @@ export const useHistory = initialState => {
       }
     }, [isinRoom]);
   
-    const setState = (action, overwrite = false) => {
+    const setState = async (action, overwrite = false) => {
         //  console.log(history);
       const newState = typeof action === "function" ? action(history[index]) : action;
       if (overwrite) {
@@ -47,34 +64,82 @@ export const useHistory = initialState => {
         if(isinRoom){
           let room = JSON.parse(localStorage.getItem('currentRoom'));
           socket.emit("elements",{elements:historyCopy,index:index,room_id:room?.room_id});
+          try {
+            const config = {
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              withCredentials: true, // Send cookies with the request
+          };
+            const data = await axios.post(`${server}/draw/room/updateroom`,{elements:historyCopy,index,room_id:room?.room_id},config)
+          } catch (error) {
+            alert(error?.response?.message);
+          }
          }
         
       } else {
         const updatedState = [...history].slice(0, index + 1);
         // console.log([...updatedState, newState]);
         setHistory([...updatedState, newState]);
-        setIndex(prevState => prevState + 1);
+        
         if(isinRoom){
           let room = JSON.parse(localStorage.getItem('currentRoom'));
           socket.emit("elements",{elements:[...updatedState, newState],index:index+1,room_id:room?.room_id});
+          try {
+            const config = {
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              withCredentials: true, // Send cookies with the request
+          };
+            const data = await axios.post(`${server}/draw/room/updateroom`,{elements:[...updatedState, newState],index:index+1,room_id:room?.room_id},config)
+          } catch (error) {
+            alert(error?.response?.data?.message);
+          }
          }
+         setIndex(prevState => prevState + 1);
       }
+    
       
     };
   
-    const undo = () =>{
-        if(index>0){ setIndex(prevIndex=>prevIndex-1);
+    const undo = async () =>{
+        if(index>0){ 
           if(isinRoom){
             let room = JSON.parse(localStorage.getItem('currentRoom'));
             socket.emit("elements",{elements:history,index:index-1,room_id:room?.room_id});
+            try {
+              const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                withCredentials: true, // Send cookies with the request
+            };
+              const data = await axios.post(`${server}/draw/room/updateroom`,{elements:history,index:index-1,room_id:room?.room_id},config)
+            } catch (error) {
+              alert(error?.response?.data?.message);
+            }
            }
+           setIndex(prevIndex=>prevIndex-1);
         }
     };
-    const redo = () =>{ if(index < history.length - 1) {setIndex(prevState => prevState + 1);
+    const redo = async() =>{ if(index < history.length - 1) {
       if(isinRoom){
         let room = JSON.parse(localStorage.getItem('currentRoom'));
         socket.emit("elements",{elements:history,index:index+1,room_id:room?.room_id});
+        try {
+          const config = {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            withCredentials: true, // Send cookies with the request
+        };
+          const data = await axios.post(`${server}/draw/room/updateroom`,{elements:history,index:index+1,room_id:room?.room_id},config)
+        } catch (error) {
+          alert(error?.response?.data?.message);
+        }
        }
+       setIndex(prevState => prevState + 1);
     }
     }
      const save =async ()=>{
@@ -98,7 +163,7 @@ export const useHistory = initialState => {
             const {data}= await axios.post(`${server}/draw/user/save`,{elements},config);
 
           } catch (error) {
-            console.log(error?.response?.message);
+            console.log(error?.response?.data?.message);
           }
      }
      const logout = async()=>{
@@ -125,6 +190,17 @@ export const useHistory = initialState => {
         alert(error?.response?.data?.message)
       }
      }
+     const leaveRoom =()=>{
+      socket.disconnect();
+      localStorage.removeItem('currentRoom');
+      setRoomElements([]);
+      setRoomIndex(0);
+      setIndex(0);
+      let p=[];
+      p.push([]);
+      setHistory(p);
+      setIsinRoom(false);
      
-    return [history[index], setState, undo, redo,save,logout];
+     }
+    return [history[index], setState, undo, redo,save,logout,leaveRoom];
   };

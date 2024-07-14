@@ -6,7 +6,8 @@ import {createElement,getElementAtPosition,
     getOppositeCoordinate,adjustElementsCoordinates,cursorForPosition,
     drawSelectBox,
     getSvgPathFromStroke,
-    drawElements
+    drawElements,
+    customMousePointer
 } from "../util/lines_and_rectangle.js"
 import { contextApi } from '../App.js'
 import { Link, json } from 'react-router-dom'
@@ -14,18 +15,26 @@ import axios from 'axios'
 import { server } from '../index.js'
 import './Canvas.css'
 import { socket } from '../socket.js'
-
+import Pen_Size from '../components/Pen_Size.jsx'
+import { MdModeEditOutline } from "react-icons/md";
+import { PiRectangleLight } from "react-icons/pi";
+import { RiDragMove2Fill } from "react-icons/ri";
+import { FaSlash } from "react-icons/fa";
+import { CiText } from "react-icons/ci";
+import { IoArrowUndoSharp,IoArrowRedoSharp  } from "react-icons/io5";
 
 const Canvas = () => {
   const [action,setAction]=useState("none");
-    const [elements, setelements,undo,redo,save,logout] = useHistory([]);
+    const [elements, setelements,undo,redo,save,logout,leaveRoom] = useHistory([]);
     const[loading,setLoding]=useState(false);
     const[tools,setTools]=useState("pencil");
     const [selectedelement,setSelectedelement]=useState(null);
     const [selecctedelementbox,setselectedelementbox]=useState(null);
     const canvs=useRef(null);
+    const [position,setMousePosition]=useState(null);
     const testArearef=useRef();
     const {isLoggedin,isinRoom}=useContext(contextApi);
+
     const getData = async()=>{
       setLoding(true)
       const config = {
@@ -34,27 +43,27 @@ const Canvas = () => {
        },
        withCredentials: true, // Send cookies with the request
     };
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
+  
       const {data} = await axios.get(`${server}/draw/user/getelements`,config)
       const elements= data?.elements;
 
       if(elements) setelements(elements,true);
       setLoding(false);
     }
-    
-    
+  
    
     useEffect(()=>{
+
        if(isLoggedin){
          getData();
        }
       
     },[isLoggedin])
       useLayoutEffect(() => {
+        const context= canvs.current.getContext('2d');
+        context.clearRect(0,0,canvs.current.width,canvs.current.height);
         if(elements){
-      const context= canvs.current.getContext('2d');
-      context.clearRect(0,0,canvs.current.width,canvs.current.height);
+     
        const rc= rough.canvas(canvs.current);
        
         
@@ -103,6 +112,7 @@ const Canvas = () => {
               let offSetY=Y-element.y1;
                setSelectedelement({...element,offSetX,offSetY});
                setselectedelementbox({...element,offSetX,offSetY});
+              
             }
            
             setelements(prev=>prev) // redrwing if only clicking in selection tool
@@ -166,8 +176,12 @@ const Canvas = () => {
         const {clientX:X,clientY:Y} =e;
         
       if(tools==="selection"){
+          if(!elements) return;
         const element = getElementAtPosition(e.clientX,e.clientY,elements)
         e.target.style.cursor= element?cursorForPosition(element.position):"default"
+      }
+      if(tools==="pencil"){
+    
       }
       if(action==="Drawing"){
       
@@ -177,7 +191,7 @@ const Canvas = () => {
         else if(action==="moving"){
 
               if(selectedelement.tools==='pencil'){
-                
+            
                 const {id,tools,xOffset,yOffset,points}=selectedelement;
                 const newPoints= points.map((point,index)=>{
                     return{
@@ -245,62 +259,86 @@ const Canvas = () => {
 
   return (
     <>
-    <div className="tools" style={{position:"fixed"}} onClick={()=>{
+    <div className="tools" style={{position:"fixed", width:"100%"}} onClick={()=>{
       setselectedelementbox(null);
     }}>
-    <label htmlFor="line">Line</label>
-    <input type="radio"  
-    id='line'
-    checked={tools==="line"}
-    onChange={()=>{
-      setTools("line") }}
-      /> 
-      <label htmlFor="rectangle">rectangle</label>
-    <input type="radio"  
-    id='rectangle'
-    checked={tools==="rectangle"}
-    onChange={()=>{
-      setTools("rectangle")
-    }}
-    /> 
-      <label htmlFor="selection">selection</label>
-  <input type="radio"  
-    id='selection'
-    checked={tools==="selection"}
-    onChange={()=>{
-      setTools("selection")
-    }}
-    /> 
-     <label htmlFor="pencil">pencil</label>
-    <input type="radio"  
-    id='pencil'
-    checked={tools==="pencil"}
-    onChange={()=>{
-      setTools("pencil")
-    }}
-    /> 
-      <label htmlFor="text">text</label>
-     <input type="radio"  
-    id='text'
-    checked={tools==="text"}
-    onChange={()=>{
-      setTools("text")
-    }}
-    /> 
-    <button onClick={()=>{undo()}} >undo</button>
-    <button onClick={()=>{redo()}} >redo</button>
+     <div id='app_name'> <h1>DrawEase</h1></div>
+      <div className="drawing_tools">
+      <span  onMouseEnter={(e)=>{e.target.style.cursor="pointer"}}
+    onClick={()=>{ setTools("line")}}
+    className={tools==='line'?"selectedTool":"drawing_tool"}>
 
-     <button onClick={()=>{
+      <FaSlash /> <span>Stroke</span>
+     </span>
+    <span className="line"></span>
+     <span  onMouseEnter={(e)=>{e.target.style.cursor="pointer"}}
+    onClick={()=>{ setTools("rectangle")}}
+    className={tools==='rectangle'?"selectedTool":"drawing_tool"}>
+    
+    <PiRectangleLight /> <span>Rectangle</span>
+    </span>
+    <span className="line"></span>
+    <span
+    onMouseEnter={(e)=>{e.target.style.cursor="pointer"}}
+    onClick={()=>{ setTools("selection")}}
+    className={tools==='selection'?"selectedTool":"drawing_tool"}
+    >
+     
+    <RiDragMove2Fill />  <span>Selection</span>
+    </span>
+    <span className="line"></span>
+    <span  onMouseEnter={(e)=>{e.target.style.cursor="pointer"}}
+    onClick={()=>{ setTools("pencil")}}
+    className={tools==='pencil'?"selectedTool":"drawing_tool"}
+    >
+    
+    <MdModeEditOutline /> <span>Draw</span>
+    </span>
+    <span className="line"></span>
+    <span  onMouseEnter={(e)=>{e.target.style.cursor="pointer"}}
+    onClick={()=>{ setTools("text")}}
+    className={tools==='text'?"selectedTool":"drawing_tool"}>
+   
+      <CiText /> <span>Text</span>
+    </span>
+
+    </div>
+
+    <div className="drawing_setting">
+      <div className="redo_button">
+    <span className='undo_redo' onClick={()=>{undo()}} onMouseDown={(e)=>{
+      e.target.style.transform="scale(0.9)"
+      // e.target.style.transform="scale(1)"
+
+    }} onMouseUp={(e)=>{
+      e.target.style.transform="scale(1)"
+    }} ><IoArrowUndoSharp /></span>
+    <span  className='undo_redo' onClick={()=>{redo()}}
+    onMouseDown={(e)=>{
+      e.target.style.transform="scale(0.9)"
+      // e.target.style.transform="scale(1)"
+
+    }} onMouseUp={(e)=>{
+      e.target.style.transform="scale(1)"
+
+    }}
+     ><IoArrowRedoSharp /></span>
+</div>
+    <div className="menu_btn">
+     <button className='canva_button' onClick={()=>{
         save();
      }} >Save</button>
-    {!isLoggedin&& <button>  <Link to="/login">Login</Link></button>}
-    {isLoggedin&& <button onClick={()=>{logout()}}> Logout</button>}
-    {isinRoom&& <button onClick={()=>{
-      socket.disconnect();
-  
-    }}>Leave Room</button>}
-
+    {!isLoggedin&& <button className='canva_button' >  <Link to="/login">Login</Link></button>}
+    {isLoggedin&& <button className='canva_button' onClick={()=>{logout()}} > Logout</button>}
+    {isinRoom&& <button  className='canva_button'onClick={()=>{
      
+      leaveRoom();
+     
+      
+    }}>Leave Room</button>}
+    </div>
+</div>
+     {/* <Pen_Size/> */}
    </div>
 
    {action === "writing" ? (
@@ -327,14 +365,15 @@ const Canvas = () => {
       ) : null}
      
        
-(<canvas id="canva" className={`${((isLoggedin&&loading))?"pointerNone":""}`} width ={window.innerWidth} height={window.innerHeight} 
+    
+<canvas id="canva" className={`${((isLoggedin&&loading))?"pointerNone":""}`} width ={window.innerWidth} height={window.innerHeight} 
    ref={canvs} 
     onMouseDown={handleMouseDown}
     onMouseMove={handleMouseMove}
     onMouseUp={handleMouseUp}
     style={{ position: "absolute", zIndex: -1 ,fontSmooth:"auto"}}
    >
-   </canvas>)
+   </canvas>
 
   { (isLoggedin && loading)&& (<div className='loading' style={{position:"fixed"}} >loading .....</div>)}
 

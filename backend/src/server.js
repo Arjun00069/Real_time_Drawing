@@ -31,6 +31,10 @@ connectDB()
                 socket.join(room_id);
                 // console.log(`user joinde ${room_id}`);
             })
+            socket.on("selection",(data)=>{
+                // console.log(data);
+                socket.to(data.room_id).emit("selection",{element:data.elements});
+            })
            
         });
 
