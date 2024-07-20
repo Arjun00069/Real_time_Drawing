@@ -1,7 +1,8 @@
-import React, { useContext, useEffect } from 'react'
+import React, { act, useContext, useEffect } from 'react'
 import {useLayoutEffect,useRef,useState} from "react"
 import rough from "roughjs/bundled/rough.esm.js"
 import { useHistory } from '../util/cutomhooks.js'
+import { deleteRoom } from '../util/roomLogic.js'
 import {createElement,getElementAtPosition,
     getOppositeCoordinate,adjustElementsCoordinates,cursorForPosition,
     drawSelectBox,
@@ -50,7 +51,7 @@ const Canvas = () => {
       if(elements) setelements(elements,true);
       setLoding(false);
     }
-  
+
    
     useEffect(()=>{
 
@@ -60,24 +61,24 @@ const Canvas = () => {
       
     },[isLoggedin])
       useLayoutEffect(() => {
+        // console.log(elements);
         const context= canvs.current.getContext('2d');
+        const rc= rough.canvas(canvs.current);
         context.clearRect(0,0,canvs.current.width,canvs.current.height);
+        context.save();
         if(elements){
-     
-       const rc= rough.canvas(canvs.current);
-       
-        
          elements.forEach((element)=>{
-          if(action==='writing' &&selectedelement.id===element.id) {
-            console.log("wkjenwk")
-            return;
-          }
-          drawElements(element,context,rc)});
-         if(selecctedelementbox){
-            drawSelectBox(selecctedelementbox,context);
+          if(action==='writing' &&selectedelement.id===element.id)  return;
+  
+          drawElements(element,context,rc)
+      
+      })
+        //  if(selecctedelementbox){
+        //     drawSelectBox(selecctedelementbox,context);
 
-         }
+        //  }
         }
+        context.restore();
     },[elements,selecctedelementbox,selectedelement,action]);
      useEffect(()=>{
      
@@ -140,7 +141,6 @@ const Canvas = () => {
         case 'line':
         case 'rectangle':
           const element = createElement(id,x1,y1,x2,y2,tools);
-        
           copy[id]=element;
           if(action!="Drawing"){setselectedelementbox(element); }
             break;
@@ -160,7 +160,6 @@ const Canvas = () => {
             text:options.text
           }
     
-     
           break;
         default:
             break;
@@ -173,6 +172,7 @@ const Canvas = () => {
     }
     
     const handleMouseMove =(e)=>{
+      // console.log(action)
         const {clientX:X,clientY:Y} =e;
         
       if(tools==="selection"){
@@ -180,11 +180,9 @@ const Canvas = () => {
         const element = getElementAtPosition(e.clientX,e.clientY,elements)
         e.target.style.cursor= element?cursorForPosition(element.position):"default"
       }
-      if(tools==="pencil"){
-    
-      }
-      if(action==="Drawing"){
       
+      if(action==="Drawing"){
+         
       let {x1,y1,id}= elements[elements.length-1];
         updateElements(id,x1,y1,X,Y,tools);
     }
@@ -262,7 +260,7 @@ const Canvas = () => {
     <div className="tools" style={{position:"fixed", width:"100%"}} onClick={()=>{
       setselectedelementbox(null);
     }}>
-     <div id='app_name'> <h1>DrawEase</h1></div>
+     <div id='app_name'> <h1>  Draw Ease</h1></div>
       <div className="drawing_tools">
       <span  onMouseEnter={(e)=>{e.target.style.cursor="pointer"}}
     onClick={()=>{ setTools("line")}}
@@ -325,10 +323,10 @@ const Canvas = () => {
      ><IoArrowRedoSharp /></span>
 </div>
     <div className="menu_btn">
-     <button className='canva_button' onClick={()=>{
+    { !isinRoom&&(<button className='canva_button' onClick={()=>{
         save();
-     }} >Save</button>
-    {!isLoggedin&& <button className='canva_button' >  <Link to="/login">Login</Link></button>}
+     }} >Save</button>)}
+    {!isLoggedin&&  !isinRoom && <button className='canva_button' >  <Link to="/">Login</Link></button>}
     {isLoggedin&& <button className='canva_button' onClick={()=>{logout()}} > Logout</button>}
     {isinRoom&& <button  className='canva_button'onClick={()=>{
      
@@ -336,6 +334,8 @@ const Canvas = () => {
      
       
     }}>Leave Room</button>}
+    {/* <button className="canva_button" onClick={()=>{deleteRoom(leaveRoom)}} >Delete Room</button> */}
+  { localStorage.getItem('currentRoom') &&<span><b>Room Id</b> : <u> {JSON.parse(localStorage.getItem('currentRoom')).room_id}</u></span>}
     </div>
 </div>
      {/* <Pen_Size/> */}

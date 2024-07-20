@@ -1,0 +1,112 @@
+h1{
+    padding: 0;
+    margin: 0;
+}
+.pointerNone{
+    pointer-events: none;
+    opacity: 0.4;
+    background-color: rgb(224, 224, 224);
+}
+.loading{
+    top: 50vh;
+    left: 48%;
+    z-index: 12;
+}
+.tools{
+    display: flex;
+justify-content: center;
+gap: 4em;
+height: 30px;
+align-items: center;
+margin-top: 3px;
+}
+.drawing_tools{
+  width: auto;
+  padding: 0 15px;
+  margin-top: 3px;
+}
+.drawing_tool{
+    
+    margin: 0 6px;
+    width: fit-content;
+    padding: 3px;
+  
+}
+.drawing_tools>span:last-child{
+    border-right: none;
+}
+.drawing_setting{
+    width: 41%;
+    margin-top: 3px;
+    display: flex;
+    justify-content: center;
+}
+.selectedTool{
+    margin: 0 6px;
+    width: fit-content;
+    padding: 3px;
+    background-color: rgb(231, 231, 231);
+    border: none !important;
+    border-radius: 5px;
+
+}
+.line{
+    border: 0.5px solid;
+}
+#app_name{
+    margin-top: 7px;
+}
+#app_name>h1{
+font-family: cursive;
+background: linear-gradient(90deg, rgba(42,126,82,1) 0%, rgba(9,235,207,1) 60%, rgba(255,0,247,1) 100%);
+
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+.undo_redo{
+    padding: 3px;
+    display: inline-block;
+border-radius: 29px;
+background-color: rgb(223, 223, 223);
+box-shadow: 0 3 4;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+height: 15px;
+width: 15px;
+}
+.undo_redo:hover{
+cursor: pointer;
+/* transform: scale(0.9); */
+}
+
+.redo_button{
+    width: 15%;
+display: flex;
+justify-content: space-around;
+}
+.canva_button{
+    align-items: flex-start;
+text-align: center;
+border-radius: 6px;
+cursor: default;
+color: black;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+border: none;
+border-top-color: white;
+border-right-color: white;
+border-bottom-color: white;
+border-left-color: white;
+background-color: white;
+box-sizing: border-box;
+margin-right: 4px;
+}
+.canva_button:hover{
+    cursor: pointer;
+}
+.canva_button>a{
+text-decoration: none;
+color: black;
+}
+
+.menu_btn{
+    display: flex;
+}

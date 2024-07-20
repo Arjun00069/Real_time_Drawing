@@ -9,6 +9,7 @@ export function createElement (id,x1,y1,x2,y2,tools){
         case "line":
         case "rectangle":
             const roughElement =tools==="line"? generator.line(x1,y1,x2,y2):generator.rectangle(x1,y1,x2-x1,y2-y1);
+
             return {id,x1,y1,x2,y2,roughElement,tools};
         case "pencil":
             return {id,points:[{x:x1,y:y1}],tools};
@@ -22,6 +23,7 @@ export function createElement (id,x1,y1,x2,y2,tools){
 
 }
 export const drawElements=(element,context,roughCanvas)=>{
+
   const type=element.tools;
 
      switch (type) {
@@ -44,9 +46,9 @@ export const drawElements=(element,context,roughCanvas)=>{
      case 'text':
       context.textBaseline = "top"
       context.font = "24px sans-serif"
-      context.stroke();
+  
       context.fillText(element.text, element.x1, element.y1)
-     
+     break ;
       default:
           break;
      }
@@ -93,7 +95,9 @@ export function distance(x1,y1,x2,y2){
   return Math.sqrt(Math.pow(x1-x2,2)+Math.pow(y1-y2,2));
 }
 export function getElementAtPosition(X,Y,elements){
-   return elements
+  let elementcopy=[...elements];
+  elementcopy.reverse();
+   return elementcopy
    .map(element=>({...element,position:positionOfElementAtPosition(X,Y,element)}))
    .find(element=>element.position!=null)
 }

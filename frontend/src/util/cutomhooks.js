@@ -202,5 +202,6 @@ export const useHistory = initialState => {
       setIsinRoom(false);
      
      }
+      //  console.log(history);
     return [history[index], setState, undo, redo,save,logout,leaveRoom];
   };
