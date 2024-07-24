@@ -15,7 +15,7 @@ connectDB()
         const io = new Server(httpServer, {
             pingTimeout: 60000,
             cors: {
-                origin:["https://real-time-drawing-ppje4uirp-arjuns-projects-8ab9bf63.vercel.app","https://real-time-drawing-ppje4uirp-arjuns-projects-8ab9bf63.vercel.app/"]
+                origin:"https://real-time-drawing-ppje4uirp-arjuns-projects-8ab9bf63.vercel.app/"
             }
         });
 
