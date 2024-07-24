@@ -18,7 +18,7 @@ connectDB()
                 origin:process.env.CORS_ORIGIN
             }
         });
-
+        console.log(process.env.CORS_ORIGIN)
         io.on('connection', (socket) => {
             // console.log(`A person connected with socket id ${socket.id}`);
             socket.on("elements",(data)=>{
