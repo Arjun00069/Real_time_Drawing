@@ -11,7 +11,7 @@ grid-template-rows: 1fr 2fr;
   position: absolute;
   width: 100%;
   height: 100%;
-  background: url("/Users/arjun/Downloads/pencils-sharpener-with-shavings.jpg"), #000;
+  background: url("../../images/pencils-sharpener-with-shavings.jpg"), #000;
   background-position: center;
   background-size: cover;
   z-index: -9;
