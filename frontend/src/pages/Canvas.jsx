@@ -340,6 +340,9 @@ const Canvas = () => {
 </div>
      {/* <Pen_Size/> */}
    </div>
+   {/* <div className="styling_tools" style={{position:"fixed",alignSelf:"flex-end"}}>
+    this is styling tools
+   </div> */}
 
    {action === "writing" ? (
         <textarea

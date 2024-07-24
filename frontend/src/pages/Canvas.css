@@ -110,3 +110,14 @@ color: black;
 .menu_btn{
     display: flex;
 }
+.styling_tools{
+    position: fixed;
+align-self: end;
+
+right: 4%;
+top: 12%;
+border: 1px solid;
+width: 13%;
+height: 70vh;
+max-height: 576px;
+}
