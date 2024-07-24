@@ -11,7 +11,7 @@ grid-template-rows: 1fr 2fr;
   position: absolute;
   width: 100%;
   height: 100%;
-  background: url('/images/pencils-sharpener-with-shavings.jpg');
+  background: url('https://img.freepik.com/free-photo/pencils-sharpener-with-shavings_23-2147843245.jpg?w=1480&t=st=1721819863~exp=1721820463~hmac=0e2da9de00754e8ec9b51d08da5b5bf138c51783096bd520e2e5b82ecd3deb37');
   background-position: center;
   background-size: cover;
   z-index: -9;
