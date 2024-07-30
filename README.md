@@ -26,6 +26,7 @@ https://github.com/user-attachments/assets/2e2dfde2-ccd0-443c-8c0c-835e3b1231e8
 
 - Node.js (preferably the latest LTS version)
 - npm (comes with Node.js)
+- Crome browser
 
 ## Setup Instructions
 
