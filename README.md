@@ -1,5 +1,13 @@
+# Draw Ease   
+For more information and to try the app, visit our [website](https://example.com).
 
-# Draw Ease
+### Access Information
+
+- **User ID:** `arjun_1`
+- **Password:** `love2laugh`
+- **Room ID:** `c3q67qaag-1722320198050`
+
+# Description                              
 The Real-Time Drawing App is a collaborative tool designed to enhance meetings 
 and brainstorming sessions by providing an interactive platform for drawing, annotating,
 and sharing ideas in real-time. Ideal for teams, classrooms, and virtual meetings, this app allows participants
@@ -11,7 +19,7 @@ https://github.com/user-attachments/assets/2e2dfde2-ccd0-443c-8c0c-835e3b1231e8
 
 
 
-For more information and to try the app, visit our(user_id:arjun_1,password:love2laugh) [website](https://example.com).
+
 
 # Project Setup
 ## Prerequisites
